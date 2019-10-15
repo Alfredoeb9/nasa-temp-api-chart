@@ -1,17 +1,15 @@
-const xLabels = []
-const ytemps = []
-
 async function chartIt() {
-  await getData();
+  const data = await getData();
 
   const ctx = document.getElementById('chart').getContext('2d');
   const myChart = new Chart(ctx, {
-      type: 'bar',
+      type: 'line',
       data: {
-          labels: xLabels,
+          labels: data.xLabels,
           datasets: [{
-              label: 'Global Average Temperature',
-              data: ytemps,
+              label: 'Combined Land-Surgace Air and Sea-Surface Water Temperature in Celsius',
+              data: data.ytemps,
+              fill: false,
               backgroundColor: [
                   'rgba(255, 99, 132, 0.2)',
                   'rgba(54, 162, 235, 0.2)',
@@ -29,6 +27,22 @@ async function chartIt() {
                   'rgba(255, 159, 64, 1)'
               ],
               borderWidth: 1
+          },
+          {
+            label: 'Northern Hemisphere Temperature in °C',
+            data: data.northern,
+            fill: false,
+            borderColor: 'rgba(99, 132, 255, 1)',
+            backgroundColor: 'rgba(99, 132, 255, 0.5)',
+            borderWidth: 1
+          },
+          {
+            label: 'Souther Hemisphere in °C',
+            data: data.southern,
+            fill: false,
+            borderColor: 'rgba(99, 255, 132, 1)',
+            backgroundColor: 'rgba(99, 255, 132, 0.5)',
+            borderWidth: 1
           }]
       }
   });
@@ -37,21 +51,25 @@ async function chartIt() {
 chartIt();
 
 
-
 async function getData() {
+  const xLabels = []
+  const ytemps = []
+  const northern = []
+  const southern = []
+
   const response = await fetch('ZonAnn.Ts+dSST.csv')
   const data = await response.text()
 
   // make a table and seperate from year and temp
-  const table = data.split('\n').slice(1);
+  const table = data.split('\n').slice(1)
+
   table.forEach(row => {
     const columns = row.split(',')
-    const year = columns[0]
-    xLabels.push(year)
-    const temp = columns[1]
-    ytemps.push(temp);
-    console.log(year, temp)
+    xLabels.push(columns[0])
+    ytemps.push(parseFloat(columns[1]) + 14)
+    northern.push(parseFloat(columns[2]) + 14)
+    southern.push(parseFloat(columns[3]) + 14)
   })
-  
+  return { xLabels, ytemps, northern, southern }
   
 }
